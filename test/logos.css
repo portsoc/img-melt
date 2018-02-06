@@ -1,0 +1,59 @@
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  #port {
+    grid-area: p;
+  }
+
+  header {
+    padding: 2vmin;
+    grid-area: h;
+    background: #621360;
+    color: white;
+    width: 100%;
+    height: 100%;
+  }
+
+  header {
+    text-align: center;
+  }
+
+  header a {
+    color: white;
+  }
+
+  main {
+    display: grid;
+    grid-template: auto repeat(4, 1fr) / repeat(4, 1fr);
+
+    grid-template-areas:
+      "h h h h"
+      ". . . ."
+      ". p p ."
+      ". . . ."
+      ". . . .";
+    min-height: 100vh;
+    width: 100vw;
+    justify-items: center;
+    align-items: center;
+  }
+
+@media screen and (max-width: 1000px) {
+  main{
+    grid-template: auto repeat(8, 1fr) / repeat(2, 1fr);
+
+    grid-template-areas:
+      "h h"
+      "p p"
+      ". ."
+      ". ."
+      ". ."
+      ". ."
+      ". ."
+      ". .";
+  }
+}

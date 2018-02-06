@@ -1,0 +1,14 @@
+{
+  "name": "img-melt",
+  "version": "1.0.0",
+  "description": "img melt is an html5 custom element for melting images pixel by pixel into a lump of pixels at the bottom of the image frame.",
+  "main": "img-melt.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rich Boakes <rjb@boakes.org> (http://boakes.org/)",
+  "contributors": [
+    "Jacek Kopecky <jacek@jacek.cz> (http://jacek.cz/)"
+  ],
+  "license": "MIT"
+}
