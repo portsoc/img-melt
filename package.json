@@ -10,5 +10,15 @@
   "contributors": [
     "Jacek Kopecky <jacek@jacek.cz> (http://jacek.cz/)"
   ],
+  "engines": {
+    "node": ">= 8.4.0"
+  },
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-uglify": "git://github.com/gruntjs/grunt-contrib-uglify.git#harmony",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-exec": "^3.0.0"
+  },
   "license": "MIT"
 }

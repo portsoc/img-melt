@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebAssembly WebGL Shaders Custom Element</title>
+    <script src="lib/wasm-arrays.js"></script>
+    <script src="./dist/appWASM.js"></script>
+    <script>
+    "use strict"
+    window.addEventListener("wasmLoaded", () => {
+
+        // Lazy load the img-melt element script, as WASM needs to finish lazy loading the .wasm stuff first
+        fetch("./img-melt-wagpu.js")
+        .then(r => r.text())
+        .then(text => {
+            const script = document.createElement("script")
+            script.id = "img-arrays"
+            script.innerHTML = text
+            document.head.appendChild(script)
+        })
+
+        let previewCanvasContext
+        let moving = false
+
+        const step = () => {
+            Module.ccall("step", null, null, null)
+            requestAnimationFrame(step)
+        }
+
+        const loadImage = src => {
+
+            Module.ccall("clearContexts", null, null, null)
+
+            const img = new Image()
+            img.addEventListener("load", () => {
+
+                const canvas = document.createElement("canvas")
+                canvas.id = "textureLoad"
+                canvas.height = img.height
+                canvas.width = img.width
+
+                canvasContainer.innerHTML = ""
+                canvasContainer.appendChild(canvas)
+
+                // Create the WebAssembly context
+                const idBuffer = Module._malloc("textureLoad".length+1)
+                Module.stringToUTF8("textureLoad", idBuffer, "textureLoad".length+1)
+                Module.ccall("createContext", null, ["number", "number", "number", "number"], [img.width, img.height, idBuffer])
+                Module._free(idBuffer)
+
+                const loadingCanvas = document.createElement("canvas")
+                loadingCanvas.width = img.width
+                loadingCanvas.height = img.height
+                const loadingContext = loadingCanvas.getContext("2d")
+                loadingContext.translate(0, img.height)
+                loadingContext.scale(1, -1)
+
+                loadingContext.drawImage(img, 0, 0)
+                const imageData = loadingContext.getImageData(0, 0, img.width, img.height).data
+
+
+                // Pass the imageData to the C++ code
+                ccallArrays("loadTexture", null, ["array"], [imageData], {heapIn: "HEAPU8"})
+
+                canvas.addEventListener("click", () => {
+                    if (!moving) {
+                        moving = true
+                        requestAnimationFrame(step)
+                    }
+                })
+            })
+
+            img.src = src
+        }
+
+        // Uncomment this and comment out the <img-melt> tag to see this work without the custom elements stuff
+        // loadImage("img/big.png")
+    })
+    </script>
+</head>
+<body>
+
+    <img-melt id="big" src="img/big.png" jiggle blend await="click"></img-melt>
+
+    <span id="canvasContainer"></span>
+
+</body>
+</html>
