@@ -47,8 +47,8 @@ std::string imgMeltFragment = R"V0G0N(
         float h = 1.0 / height;
 
         vec4 pixel = texture2D( texture, vec2( v_texCoord.x, 1.0 - v_texCoord.y));
-        vec4 above = texture2D( texture, vec2( v_texCoord.x, (1.0 - v_texCoord.y) + h ));
-        vec4 below1 = texture2D( texture, vec2( jiggle(v_texCoord.x, w), (1.0 - v_texCoord.y) - h ));
+        vec4 above = texture2D( texture, vec2( jiggle(v_texCoord.x, w), (1.0 - v_texCoord.y) + h ));
+        vec4 below1 = texture2D( texture, vec2( v_texCoord.x, (1.0 - v_texCoord.y) - h ));
 
 
         if (pixel.a == 0.0) {
@@ -58,6 +58,92 @@ std::string imgMeltFragment = R"V0G0N(
                 gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
             } else {
                 gl_FragColor = pixel;
+            }
+        }
+    }
+)V0G0N";
+
+std::string imgMeltFragmentWithBlend = R"V0G0N(
+    precision mediump float;
+    varying vec2 v_texCoord;
+    uniform sampler2D texture;
+
+    uniform float width;
+    uniform float height;
+
+    float shiftProbability = 1.0 / 8.0;
+    float transferred;
+    float original;
+    float finalAlpha;
+
+    float rand(vec2 co){
+        return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    }
+
+    float jiggle (float value, float w) {
+        float r = rand(v_texCoord);
+        if (r < shiftProbability && value > 0.0)        return value - w;
+        if (r > 1.0 - shiftProbability && value < 1.0)  return value + w;
+        return value;
+    }
+
+    // float round (float num) {
+    //     return sign(num) * float(int(abs(num)+0.5));
+    // }
+
+    // weightedAverage
+    float wa (float a, float b) {
+        return (a * transferred + b * original) / finalAlpha;
+        // return round((a * transferred + b * original) / finalAlpha);
+        // return floor((a * transferred + b * original) / finalAlpha + 0.5);
+    }
+
+    void main() {
+
+        // Normalized pixel size
+        float w = 1.0 / width;
+        float h = 1.0 / height;
+
+        vec4 pixel = texture2D( texture, vec2( v_texCoord.x, 1.0 - v_texCoord.y));
+        vec4 above = texture2D( texture, vec2( jiggle(v_texCoord.x, w), (1.0 - v_texCoord.y) + h ));
+        vec4 below1 = texture2D( texture, vec2( v_texCoord.x, (1.0 - v_texCoord.y) - h ));
+
+
+        if (pixel.a == 0.0) {
+            gl_FragColor = above;
+
+            // mergePixels
+            finalAlpha = min(pixel.a + below1.a, 1.0);
+            transferred = finalAlpha - below1.a;
+            original = below1.a;
+            gl_FragColor.a -= transferred;
+
+        } else {
+            if (below1.a == 0.0) {
+                gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+            } else {
+                gl_FragColor = pixel;
+
+                // mergePixels
+
+                // For this pixel
+                if (pixel.a == 0.0 || below1.a == 1.0) {
+                } else {
+                    finalAlpha = min(pixel.a + below1.a, 1.0);
+                    transferred = finalAlpha - below1.a;
+                    original = below1.a;
+                    gl_FragColor.a -= transferred;
+                }
+
+                // For the pixel below
+                if (above.a == 0.0 || pixel.a == 1.0) {
+                    gl_FragColor = pixel;
+                } else {
+                    finalAlpha = min(pixel.a + below1.a, 1.0);
+                    transferred = finalAlpha - below1.a;
+                    original = below1.a;
+                    gl_FragColor = vec4(wa(pixel.r, below1.r), wa(pixel.g, below1.g), wa(pixel.b, below1.b), finalAlpha);
+                }
             }
         }
     }
@@ -106,7 +192,7 @@ GLuint CompileShader (GLenum type, std::string *source) {
 }
 
 
-Context::Context (int w, int h, char * id) {
+Context::Context (int w, int h, char * id, int blend) {
 
     width = w;
     height = h;
@@ -124,7 +210,11 @@ Context::Context (int w, int h, char * id) {
     emscripten_webgl_make_context_current(context);
 
     // Compile shaders
-    fragmentShader = CompileShader(GL_FRAGMENT_SHADER, &imgMeltFragment);
+    if (blend) {
+        fragmentShader = CompileShader(GL_FRAGMENT_SHADER, &imgMeltFragmentWithBlend);
+    } else {
+        fragmentShader = CompileShader(GL_FRAGMENT_SHADER, &imgMeltFragment);
+    }
     vertexShader = CompileShader(GL_VERTEX_SHADER, &vertex_source);
 
     // Build program

@@ -2,7 +2,7 @@
 
 class Context {
 public:
-    Context (int width, int height, char * id);
+    Context (int width, int height, char * id, int blend);
 
     ~Context (void);
 

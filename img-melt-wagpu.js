@@ -40,7 +40,7 @@ class Melt extends HTMLElement {
                 // Create the WebAssembly context
                 const idBuffer = Module._malloc(this.canvas.id.length+1)
                 Module.stringToUTF8(this.canvas.id, idBuffer, this.canvas.id.length+1)
-                Module.ccall("createContext", null, ["number", "number", "number", "number"], [img.width, img.height, idBuffer])
+                Module.ccall("createContext", null, ["number", "number", "number", "number", "number"], [img.width, img.height, idBuffer, this.blend?1:0])
                 Module._free(idBuffer)
 
                 // NOW, it is moved into the shadow dom

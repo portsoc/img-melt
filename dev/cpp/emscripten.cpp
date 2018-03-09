@@ -32,8 +32,8 @@ extern "C" {
     }
 
     EMSCRIPTEN_KEEPALIVE
-    void createContext (int width, int height, char * id) {
-        contexts[0] = new Context(width, height, id);
+    void createContext (int width, int height, char * id, int blend) {
+        contexts[0] = new Context(width, height, id, blend);
         free(id);
     }
 

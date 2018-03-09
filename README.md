@@ -9,3 +9,5 @@ A custom HTML element that melts images pixel by pixel.  Each pixel is compared 
 
 ----
 For the WebAssembly + WebGL stuff, you need to `npm install` the dev dependencies, to be able to run `grunt` to listen to changes and run the C++ compilation. You need to install emscripten to compile. A guide can be found on their website [here](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
+
+To run the stuff, you also need to serve the files via a server (a barebones one is included), as this is a requirement for WebAssembly to work.
