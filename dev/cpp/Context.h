@@ -14,6 +14,11 @@ private:
     int width;
     int height;
 
+    GLuint texId;
+    GLuint vertexObject;
+    GLuint indexObject;
+    uint8_t* imgData;
+
     GLuint programObject;
     GLuint vertexShader;
     GLuint fragmentShader;

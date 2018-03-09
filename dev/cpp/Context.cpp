@@ -1,9 +1,5 @@
 #include "Context.h"
 
-GLuint texId;
-GLuint vertexObject;
-GLuint indexObject;
-uint8_t* imgData;
 
 // Shaders
 std::string vertex_source = R"V0G0N(

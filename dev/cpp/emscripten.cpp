@@ -1,5 +1,6 @@
 #include <emscripten.h>
 #include <string>
+#include <vector>
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 extern "C" {
@@ -7,7 +8,7 @@ extern "C" {
 }
 #include "Context.cpp"
 
-Context* contexts[2];
+std::vector<Context*> contexts;
 
 int main(int argc, char const *argv[]) {
     printf("[WASM] Loaded\n");
@@ -28,25 +29,27 @@ extern "C" {
 
     EMSCRIPTEN_KEEPALIVE
     void clearContexts (void) {
-        if (contexts[0]) delete contexts[0];
+        for (int c=0; c<contexts.size(); c++) {
+            delete contexts[c];
+        }
+        contexts.clear();
     }
 
     EMSCRIPTEN_KEEPALIVE
-    void createContext (int width, int height, char * id, int blend) {
-        contexts[0] = new Context(width, height, id, blend);
+    int createContext (int width, int height, char * id, int blend) {
+        contexts.push_back(new Context(width, height, id, blend));
         free(id);
+        return contexts.size() - 1;
     }
 
     EMSCRIPTEN_KEEPALIVE
-    void loadTexture (uint8_t *buf, int bufSize) {
-        printf("[WASM] Loading Texture \n");
-
-        contexts[0]->run(buf);
+    void loadTexture (uint8_t *buf, int bufSize, int contextIndex) {
+        contexts[contextIndex]->run(buf);
         free(buf);
     }
 
     EMSCRIPTEN_KEEPALIVE
-    void step (void) {
-        contexts[0]->step();
+    void step (int contextIndex) {
+        contexts[contextIndex]->step();
     }
 }

@@ -40,7 +40,7 @@ class Melt extends HTMLElement {
                 // Create the WebAssembly context
                 const idBuffer = Module._malloc(this.canvas.id.length+1)
                 Module.stringToUTF8(this.canvas.id, idBuffer, this.canvas.id.length+1)
-                Module.ccall("createContext", null, ["number", "number", "number", "number", "number"], [img.width, img.height, idBuffer, this.blend?1:0])
+                this.wasmCtxIndex = Module.ccall("createContext", null, ["number", "number", "number", "number", "number"], [img.width, img.height, idBuffer, this.blend?1:0])
                 Module._free(idBuffer)
 
                 // NOW, it is moved into the shadow dom
@@ -58,7 +58,7 @@ class Melt extends HTMLElement {
                 const imageData = loadingContext.getImageData(0, 0, img.width, img.height).data
 
                 // Pass the imageData to the C++ code
-                ccallArrays("loadTexture", null, ["array"], [imageData], {heapIn: "HEAPU8"})
+                ccallArrays("loadTexture", null, ["array", "number"], [imageData, this.wasmCtxIndex], {heapIn: "HEAPU8"})
 
 
                 this.w = img.width
@@ -121,7 +121,7 @@ class Melt extends HTMLElement {
     }
 
     step() {
-        Module.ccall("step", null, null, null)
+        Module.ccall("step", null, ["number"], [this.wasmCtxIndex])
         requestAnimationFrame(this.step.bind(this))
     }
 }
