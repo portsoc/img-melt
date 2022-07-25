@@ -1,4 +1,3 @@
-console.log('RAH')
 class Melt extends HTMLElement {
   constructor() {
     super();
@@ -10,6 +9,9 @@ class Melt extends HTMLElement {
     this.blend = this.hasAttribute('blend');
     this.src = this.getAttribute('src') || false;
     this.await = this.getAttribute('await') || false;
+    this.gravity = this.getAttribute('gravity') || false;
+    console.log('GRAVITY IS');
+    console.log(this.gravity);
 
     this.stepBound = this.step.bind(this);
 
