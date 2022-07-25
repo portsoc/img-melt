@@ -1,3 +1,5 @@
+const gravity = { x:0, y:0 };
+
 class Melt extends HTMLElement {
   constructor() {
     super();
@@ -9,9 +11,9 @@ class Melt extends HTMLElement {
     this.blend = this.hasAttribute('blend');
     this.src = this.getAttribute('src') || false;
     this.await = this.getAttribute('await') || false;
-    this.gravity = this.getAttribute('gravity') || false;
-    console.log('GRAVITY IS');
-    console.log(this.gravity);
+    this.gravityEnabled = this.getAttribute('gravity') || false;
+    
+    window.addEventListener('devicemotion', this.handleMotion, true);
 
     this.stepBound = this.step.bind(this);
 
@@ -23,7 +25,6 @@ class Melt extends HTMLElement {
     });
     this.shadow.appendChild(this.canvas);
 
-
     if (this.src) {
       let img = new Image();
       img.crossOrigin = "Anonymous";
@@ -31,7 +32,7 @@ class Melt extends HTMLElement {
 
       //drawing of the test image - img1
       img.onload = function() {
-        // nb 'this' here is the image, so we need obj bounf to this previously
+        // nb 'this' here is the image, so we need obj bound to this previously
         obj.canvas.setAttribute("width", this.width);
         obj.canvas.setAttribute("height", this.height);
         obj.ctx.drawImage(this, 0, 0, this.width, this.height);
@@ -52,6 +53,10 @@ class Melt extends HTMLElement {
       this.drawBalls();
       window.requestAnimationFrame(this.stepBound);
     }
+  }
+
+  handleMotion(e) {
+    gravity.x = e.accelerationIncludingGravity.x;
   }
 
   drawBalls() {
@@ -80,6 +85,17 @@ class Melt extends HTMLElement {
     if (r >= 1 - shiftProbability && x < this.w - 1) x += 1;
     return x;
   }
+
+  gravityEffect(x) {
+    // Gravity manually throttled for better effect
+    if (gravity.x > 1) {
+      return x - 1 ;
+    } else if (gravity.x < -1) {
+      return x + 1 ;
+    } 
+    return x;
+  }
+
 
   noJiggle(x) {
     return x;
@@ -154,7 +170,7 @@ class Melt extends HTMLElement {
     for (let y = this.h-2; y >= 0; y--) {
       for (let x = this.w-1; x >= 0; x--) {
         const above = this.xyToArr(x, y);
-        const below = this.xyToArr(this.jiggle(x), y+1);
+        const below = this.xyToArr(this.gravityEffect(this.jiggle(x)), y+1);
         if (img.data[below + 3] == 0 && img.data[above + 3] != 0) {
           moved++;
           this.swapPixels(img.data, above, below);
