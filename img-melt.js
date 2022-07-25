@@ -1,3 +1,4 @@
+console.log('RAH')
 class Melt extends HTMLElement {
   constructor() {
     super();
